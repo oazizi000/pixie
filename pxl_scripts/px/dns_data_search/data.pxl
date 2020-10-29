@@ -1,0 +1,41 @@
+# Copyright (c) Pixie Labs, Inc.
+# Licensed under the Apache License, Version 2.0 (the "License")
+
+''' DNS Traffic Tracer
+
+This script traces all DNS traffic on the cluster for a specified amount of time.
+'''
+
+import px
+
+# Prep:
+# kubectl apply -f https://k8s.io/examples/admin/dns/dnsutils.yaml
+#
+# Then trigger a DNS request via:
+# kubectl exec -i -t dnsutils -- nslookup <insert domain name here>
+
+# ----------------------------------------------------------------
+# Script variables
+# ----------------------------------------------------------------
+start_time = '-3000s'
+max_num_records = 1000
+
+# ----------------------------------------------------------------
+# Implementation
+# ----------------------------------------------------------------
+
+df = px.DataFrame(table='dns_events', start_time=start_time)
+
+df.start_time = df.time_ + (-df.latency_ns)
+df.pod = df.ctx['pod']
+df = df.head(n=max_num_records)
+df.target = px.Service(px.nslookup(df.remote_addr))
+
+df = df[px.contains(df.req_body, "foo")]
+
+df.query = px.pluck(df.req_body, 'queries')
+df.answer = px.pluck(df.resp_body, 'answers')
+df = df.drop(['req_body', 'resp_body', 'upid', 'trace_role', 'req_header', 'pod', 'resp_header', 'time_', 'remote_addr', 'remote_port'])
+
+px.display(df)
+
