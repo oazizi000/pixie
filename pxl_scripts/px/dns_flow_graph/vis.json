@@ -23,7 +23,7 @@
   ],
   "widgets": [
     {
-      "name": "Net Flow Graph",
+      "name": "DNS Flow Graph",
       "position": {
         "x": 0,
         "y": 0,
@@ -37,7 +37,7 @@
           "fromColumn": "from_entity",
           "toColumn": "to_entity"
         },
-        "edgeWeightColumn": "latency",
+        "edgeWeightColumn": "latency_avg",
         "edgeHoverInfo": [
           "latency_avg",
           "latency_max",
